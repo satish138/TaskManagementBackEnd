@@ -18,10 +18,12 @@ app.use(express.json());
 // Import routes
 const authRoutes = require('./routes/auth');
 const taskRoutes = require('./routes/tasks');
+const projectRoutes = require('./routes/projectRoutes');
 
 // Use routes
 app.use('/api/auth', authRoutes);
 app.use('/api/tasks', taskRoutes);
+app.use('/api/projects', projectRoutes);
 
 // Error handling middleware (must be last)
 const errorHandler = require('./middleware/errorHandler');

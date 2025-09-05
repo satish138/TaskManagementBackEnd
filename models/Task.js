@@ -6,15 +6,15 @@ const taskSchema = new mongoose.Schema({
     required: true,
     trim: true
   },
+  projectId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Project',
+    default: null
+  },
   description: {
     type: String,
     trim: true,
     default: ''
-  },
-  project: {
-    type: String,
-    enum: ['PROJECT_1', 'PROJECT_2', 'PROJECT_3'],
-    default: 'PROJECT_1'
   },
   status: {
     type: String,

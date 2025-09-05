@@ -21,9 +21,14 @@ const getAllTasks = async (req, res) => {
       query.status = req.query.status;
     }
 
-    // Add project filter if provided
+    // Add project filter if provided (legacy string project)
     if (req.query.project) {
       query.project = req.query.project;
+    }
+
+    // Add projectId filter if provided (preferred)
+    if (req.query.projectId) {
+      query.projectId = req.query.projectId;
     }
 
     // Add search filter if provided
@@ -36,8 +41,9 @@ const getAllTasks = async (req, res) => {
       };
       
       // If we already have a query with $or (user role filter), use $and to combine
+      // IMPORTANT: wrap the existing $or array in an object, otherwise the query is invalid
       if (query.$or) {
-        query.$and = [query.$or, searchQuery];
+        query.$and = [{ $or: query.$or }, searchQuery];
         delete query.$or;
       } else {
         query.$or = searchQuery.$or;
@@ -47,6 +53,7 @@ const getAllTasks = async (req, res) => {
     tasks = await Task.find(query)
       .populate('createdBy', 'username email')
       .populate('assignedTo', 'username email')
+      .populate('projectId', 'title description')
       .sort({ createdAt: -1 });
 
     res.json({
@@ -153,7 +160,7 @@ const getTaskById = async (req, res) => {
 // Create new task
 const createTask = async (req, res) => {
   try {
-    const { heading, description, assignedTo, project } = req.body;
+    const { heading, description, assignedTo, projectId } = req.body;
 
     // Validate input
     if (!heading || heading.trim() === '') {
@@ -169,8 +176,8 @@ const createTask = async (req, res) => {
       createdBy: req.user._id
     };
 
-    if (project) {
-      taskData.project = project;
+    if (projectId) {
+      taskData.projectId = projectId;
     }
 
     // Only admin can assign tasks to other users
@@ -186,7 +193,8 @@ const createTask = async (req, res) => {
 
     const populatedTask = await Task.findById(task._id)
       .populate('createdBy', 'username email')
-      .populate('assignedTo', 'username email');
+      .populate('assignedTo', 'username email')
+      .populate('projectId', 'title description');
 
     res.status(201).json({
       success: true,

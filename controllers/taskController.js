@@ -210,7 +210,7 @@ const createTask = async (req, res) => {
 // Update task status
 const updateTaskStatus = async (req, res) => {
   try {
-    const { status } = req.body;
+    const { status, projectId } = req.body;
     const task = await Task.findById(req.params.id);
 
     if (!task) {
@@ -240,11 +240,18 @@ const updateTaskStatus = async (req, res) => {
     }
 
     task.status = status;
+    
+    // Preserve projectId if provided
+    if (projectId !== undefined) {
+      task.projectId = projectId;
+    }
+    
     await task.save();
 
     const updatedTask = await Task.findById(task._id)
       .populate('createdBy', 'username email')
-      .populate('assignedTo', 'username email');
+      .populate('assignedTo', 'username email')
+      .populate('projectId', 'title description');
 
     res.json({
       success: true,
@@ -288,14 +295,14 @@ const updateTask = async (req, res) => {
     if (description !== undefined) task.description = description.trim();
     if (assignedTo !== undefined) task.assignedTo = assignedTo || null;
     if (status !== undefined) task.status = status;
-    if (projectId !== undefined) task.project = projectId || null; // allow clearing project
+    if (projectId !== undefined) task.projectId = projectId || null; // allow clearing project
 
     await task.save();
 
     const updatedTask = await Task.findById(task._id)
       .populate('createdBy', 'username email')
       .populate('assignedTo', 'username email')
-      .populate('projectId', 'title'); // populate project title
+      .populate('projectId', 'title description'); // populate project title and description
 
     res.json({
       success: true,

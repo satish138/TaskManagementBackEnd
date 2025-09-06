@@ -158,34 +158,29 @@ const getTaskById = async (req, res) => {
 };
 
 // Create new task
+// Create new task
 const createTask = async (req, res) => {
   try {
     const { heading, description, assignedTo, projectId } = req.body;
 
-    // Validate input
     if (!heading || heading.trim() === '') {
-      return res.status(400).json({ 
-        success: false, 
-        message: 'Heading is required' 
+      return res.status(400).json({
+        success: false,
+        message: 'Heading is required'
       });
     }
 
     const taskData = {
       heading: heading.trim(),
       description: description ? description.trim() : '',
-      createdBy: req.user._id
+      createdBy: req.user._id,
+      projectId: projectId || null,
+      assignedTo: null // default Unassigned
     };
 
-    if (projectId) {
-      taskData.projectId = projectId;
-    }
-
-    // Only admin can assign tasks to other users
+    // Allow assignment only if admin explicitly provides one
     if (assignedTo && req.user.role === 'admin') {
       taskData.assignedTo = assignedTo;
-    } else if (!assignedTo) {
-      // If no assignment, assign to creator
-      taskData.assignedTo = req.user._id;
     }
 
     const task = new Task(taskData);
@@ -204,12 +199,13 @@ const createTask = async (req, res) => {
 
   } catch (error) {
     console.error('Create task error:', error);
-    res.status(500).json({ 
-      success: false, 
-      message: 'Internal server error while creating task' 
+    res.status(500).json({
+      success: false,
+      message: 'Internal server error while creating task'
     });
   }
 };
+
 
 // Update task status
 const updateTaskStatus = async (req, res) => {
@@ -266,11 +262,12 @@ const updateTaskStatus = async (req, res) => {
 };
 
 // Update task (admin only)
+// Update task (admin only)
 const updateTask = async (req, res) => {
   try {
-    const { heading, description, assignedTo, status, project } = req.body;
-    const task = await Task.findById(req.params.id);
+    const { heading, description, assignedTo, status, projectId } = req.body;
 
+    const task = await Task.findById(req.params.id);
     if (!task) {
       return res.status(404).json({ 
         success: false, 
@@ -286,26 +283,19 @@ const updateTask = async (req, res) => {
       });
     }
 
-    // Validate project if provided
-    if (project && !['PROJECT_1', 'PROJECT_2', 'PROJECT_3'].includes(project)) {
-      return res.status(400).json({
-        success: false,
-        message: 'Invalid project. Must be PROJECT_1, PROJECT_2, or PROJECT_3'
-      });
-    }
-
     // Update fields if provided
     if (heading !== undefined) task.heading = heading.trim();
     if (description !== undefined) task.description = description.trim();
-    if (assignedTo !== undefined) task.assignedTo = assignedTo;
+    if (assignedTo !== undefined) task.assignedTo = assignedTo || null;
     if (status !== undefined) task.status = status;
-    if (project !== undefined) task.project = project;
+    if (projectId !== undefined) task.project = projectId || null; // allow clearing project
 
     await task.save();
 
     const updatedTask = await Task.findById(task._id)
       .populate('createdBy', 'username email')
-      .populate('assignedTo', 'username email');
+      .populate('assignedTo', 'username email')
+      .populate('projectId', 'title'); // populate project title
 
     res.json({
       success: true,
@@ -321,6 +311,8 @@ const updateTask = async (req, res) => {
     });
   }
 };
+
+
 
 // Delete task (admin only)
 const deleteTask = async (req, res) => {

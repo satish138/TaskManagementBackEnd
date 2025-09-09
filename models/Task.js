@@ -42,7 +42,9 @@ const taskSchema = new mongoose.Schema({
   completionDate: {
     type: Date,
     default: null
-  }
+  },
+  file: { type: String }
+
 });
 
 // Middleware to update dates when status changes

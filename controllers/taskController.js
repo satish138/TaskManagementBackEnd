@@ -1,6 +1,50 @@
 const Task = require('../models/Task');
 const User = require('../models/User');
 
+// Get tasks for a specific user (admin only)
+const getUserTasks = async (req, res) => {
+  try {
+    // Only admins can view other users' tasks
+    if (req.user.role !== 'admin') {
+      return res.status(403).json({
+        success: false,
+        message: 'Access denied. Admin privileges required.'
+      });
+    }
+
+    const userId = req.params.userId;
+    
+    // Validate user exists
+    const userExists = await User.findById(userId);
+    if (!userExists) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
+
+    // Find tasks where the user is assigned
+    const tasks = await Task.find({ assignedTo: userId })
+      .populate('createdBy', 'username email')
+      .populate('assignedTo', 'username email')
+      .populate('projectId', 'title description')
+      .sort({ createdAt: -1 });
+
+    res.json({
+      success: true,
+      data: tasks,
+      count: tasks.length
+    });
+
+  } catch (error) {
+    console.error('Get user tasks error:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Internal server error while fetching user tasks' 
+    });
+  }
+};
+
 // Get all tasks (admin sees all, users see only their own)
 const getAllTasks = async (req, res) => {
   try {
@@ -400,5 +444,6 @@ module.exports = {
   deleteTask,
   getTaskStats,
   getTaskUsers,
-  updateTaskAssignee
+  updateTaskAssignee,
+  getUserTasks
 };

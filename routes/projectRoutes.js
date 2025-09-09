@@ -6,7 +6,7 @@ const {
   getProjectById, 
   updateProject, 
   deleteProject 
-} = require('../controllers/ProjectController');
+} = require('../controllers/projectController');
 
 const router = express.Router();
 

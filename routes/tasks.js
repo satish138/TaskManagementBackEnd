@@ -14,7 +14,8 @@
 //   deleteTask,
 //   getTaskStats,
 //   getTaskUsers,
-//   updateTaskAssignee
+//   updateTaskAssignee,
+//   getUserTasks
 // } = require('../controllers/taskController');
 
 // const router = express.Router();
@@ -54,7 +55,8 @@ const {
   deleteTask,
   getTaskStats,
   getTaskUsers,
-  updateTaskAssignee
+  updateTaskAssignee,
+  getUserTasks
 } = require('../controllers/taskController');
 
 const upload = require('../middleware/upload');
@@ -68,6 +70,7 @@ router.use(auth);
 router.get('/', getAllTasks);
 router.get('/stats', getTaskStats);
 router.get('/users', getTaskUsers);
+router.get('/user/:userId', adminAuth, getUserTasks);
 router.get('/:id', getTaskById);
 
 // ✅ Add file upload middleware here

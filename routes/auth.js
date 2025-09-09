@@ -11,7 +11,9 @@ const {
   getAllUsers,
   getProfile,
   updateProfile,
-  seedUsers
+  seedUsers,
+  adminRegister,
+  getUserById
 } = require('../controllers/authController');
 
 const router = express.Router();
@@ -25,5 +27,9 @@ router.post('/seed', seedUsers);
 router.get('/users', auth, adminAuth, getAllUsers);
 router.get('/profile', auth, getProfile);
 router.put('/profile', auth, updateProfile);
+
+// Admin routes
+router.post('/admin/register', auth, adminAuth, adminRegister);
+router.get('/users/:userId', auth, adminAuth, getUserById);
 
 module.exports = router;

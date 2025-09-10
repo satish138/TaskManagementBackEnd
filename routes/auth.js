@@ -12,6 +12,7 @@ const {
   getProfile,
   updateProfile,
   seedUsers,
+  RemoveUser,
   adminRegister,
   getUserById
 } = require('../controllers/authController');
@@ -31,5 +32,6 @@ router.put('/profile', auth, updateProfile);
 // Admin routes
 router.post('/admin/register', auth, adminAuth, adminRegister);
 router.get('/users/:userId', auth, adminAuth, getUserById);
+router.delete('/users/:userId', auth, adminAuth, RemoveUser);
 
 module.exports = router;

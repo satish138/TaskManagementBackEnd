@@ -405,6 +405,31 @@ const getUserById = async (req, res) => {
   }
 };
 
+const RemoveUser = async (req, res) => {
+  try {
+    const userId = req.params.userId;
+    const user = await User.findByIdAndDelete(userId);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
+    res.json({
+      success: true,
+      message: 'User deleted successfully'
+    });
+  }
+  catch (error) {
+    console.error('Delete user error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Internal server error while deleting user'
+    });
+  }
+};
+
+
 module.exports = {
   register,
   login,
@@ -412,6 +437,7 @@ module.exports = {
   getProfile,
   updateProfile,
   seedUsers,
+  RemoveUser,
   adminRegister,
   getUserById
 };
